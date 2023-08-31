@@ -1,45 +1,35 @@
 package gee
 
 import (
-	"fmt"
+	//"fmt"
 	"net/http"
 )
 
-type Handler func (w http.ResponseWriter, r *http.Request)
-
-type My_struct struct{
-	rounter map[string]Handler
+type Engine struct{
+	rounter *Rounter
 }
 
-func New() *My_struct {
-	return &My_struct{rounter: make(map[string]Handler)}
+func New() *Engine {
+	return &Engine{rounter: NewRounter(),}
 }
 
-func (my_struct *My_struct) AddRounter(key string, handler Handler){
-	my_struct.rounter[key] = handler
+func (engine *Engine) AddRounter(methond string, pattern string, handler Handler){
+	key := methond + "-" + pattern
+	engine.rounter.Add(key, handler)
 }
 
-func (my_struct *My_struct) GET(path string, handler Handler){
-	my_struct.AddRounter("GET-" + path, handler)
+func (engine *Engine) Get(pattern string, handler Handler){
+	engine.AddRounter("GET", pattern, handler)
 }
-func (my_struct *My_struct) POST(path string, handler Handler){
-	my_struct.AddRounter("POST-" + path, handler)
+func (engine *Engine) Post(pattern string, handler Handler){
+	engine.AddRounter("POST", pattern, handler)
 }
-func (my_struct *My_struct) RUN(addr string) error{
-	return http.ListenAndServe(addr, my_struct)
+func (engine *Engine) Run(addr string) error{
+	return http.ListenAndServe(addr, engine)
 }
 
 
-func (my_struct *My_struct) ServeHTTP(w http.ResponseWriter, r *http.Request){
-	for k, v := range my_struct.rounter{
-		fmt.Fprintf(w, "key: %v value: %v\n", k, v)
-	}
-	
-	key := r.Method + "-" + r.URL.Path
-	fmt.Fprintf(w, "key: %v \n", key)
-	if handler, ok := my_struct.rounter[key]; ok{
-		handler(w, r)
-	}else{
-		fmt.Fprintf(w, "404 NOT FOUND: %s\n", r.URL.Path)
-	}
+func (engine *Engine) ServeHTTP(w http.ResponseWriter, r *http.Request){
+	c := NewContext(w, r)
+	engine.rounter.Handle(c)
 }
