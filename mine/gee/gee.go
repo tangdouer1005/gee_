@@ -14,14 +14,14 @@ func New() *Engine {
 }
 
 func (engine *Engine) AddRounter(methond string, pattern string, handler Handler){
-	key := methond + "-" + pattern
-	engine.rounter.Add(key, handler)
+	
+	engine.rounter.Add(methond, pattern, handler)
 }
 
-func (engine *Engine) Get(pattern string, handler Handler){
+func (engine *Engine) GET(pattern string, handler Handler){
 	engine.AddRounter("GET", pattern, handler)
 }
-func (engine *Engine) Post(pattern string, handler Handler){
+func (engine *Engine) POST(pattern string, handler Handler){
 	engine.AddRounter("POST", pattern, handler)
 }
 func (engine *Engine) Run(addr string) error{

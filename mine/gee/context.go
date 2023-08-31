@@ -9,8 +9,11 @@ import (
 type Context struct{
 	Writer http.ResponseWriter
 	Req *http.Request
+	
 	Path string
 	Method string
+
+	Params map[string]string
 }
 
 func NewContext(w http.ResponseWriter, r *http.Request) *Context {
@@ -46,7 +49,7 @@ func (c *Context) SetData(code int, data []byte){
 
 func (c *Context) String(code int, format string, values ...interface{}){
 	c.SetHeader("Content-Type", "text/plain")
-	c.SetData(code, ([]byte)(fmt.Sprintf(format, values)))
+	c.SetData(code, ([]byte)(fmt.Sprintf(format, values ...)))
 }
 
 func (c *Context) HTML(code int, content string){
@@ -61,5 +64,10 @@ func (c *Context) JSON(code int, obj interface{}){
 	if err := encoder.Encode(obj); err != nil {
 		http.Error(c.Writer, err.Error(), 500)
 	}
+}
+
+func (c *Context) Param(key string) string{
+	val, _ := c.Params[key]
+	return val
 }
 

@@ -7,20 +7,28 @@ import (
 )
 
 func main()  {
-	G := gee.New()
-	G.Get("/", func(c *gee.Context) {
+	r := gee.New()
+	r.GET("/", func(c *gee.Context) {
 		c.HTML(http.StatusOK, "<h1>Hello Gee</h1>")
 	})
-	G.Get("/hello", func(c *gee.Context) {
+
+	r.GET("/hello", func(c *gee.Context) {
 		// expect /hello?name=geektutu
 		c.String(http.StatusOK, "hello %s, you're at %s\n", c.Query("name"), c.Path)
 	})
 
-	G.Post("/login", func(c *gee.Context) {
-		c.JSON(http.StatusOK, gee.H{
-			"username": c.PostForm("username"),
-			"password": c.PostForm("password"),
-		})
+	r.GET("/hello/:name", func(c *gee.Context) {
+		// expect /hello/geektutu
+		//fmt.Printf("%v", c.Path)
+		// for key, val := range c.Params{
+		// 	fmt.Printf(" %v, %v\n", key, val);
+		// }
+		c.String(http.StatusOK, "hello %s, you're at %v\n", c.Param("name"), c.Path)
+		//c.String(http.StatusOK, "hello you're at %v\n", c.Path)
 	})
-	G.Run(":9999")
+
+	r.GET("/assets/*filepath", func(c *gee.Context) {
+		c.JSON(http.StatusOK, map[string]interface{}{"filepath": c.Param("filepath")})
+	})
+	r.Run(":9999")
 }
